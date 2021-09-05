@@ -40,19 +40,13 @@ for file in os.listdir(os.path.join(MAPS_PATH)):
 def draw_pickrate(agent_stats: dict):
     prbg = Image.open(os.path.join(ASSETS_PATH, "pickratebg.png"))
     drawpr = ImageDraw.Draw(prbg)
-    agents, precentage = agent_stats.items()
-    text1 = f"Agent:      Pickrate:" \
-            f"\n\n{agents[0]}" \
-            f"\n\n{agents[1]}" \
-            f"\n\n{agents[2]}" \
-            f"\n\n{agents[3]}" \
-            f"\n\n{agents[4]}"
-
-    text2 = f"{precentage[0]}%" \
-            f"\n\n{precentage[1]}% " \
-            f"\n\n{precentage[2]}% " \
-            f"\n\n{precentage[3]}% " \
-            f"\n\n{precentage[4]}%"
+    agents, precentage = zip(*agent_stats.items())
+    text1 = "Agent:      Pickrate:" 
+    text2 = f"{precentage[0]:0.1F}%"
+    for line in range(len(agents)):
+        text1 += f"\n\n{agents[line]}"
+        if line != len(precentage)-1:
+            text2 += f"\n\n{precentage[1+line]:0.1F}%"
 
     drawpr.multiline_text((152, 23), text1, (255, 255, 255), font=font, spacing=13)
     drawpr.multiline_text((381, 124), text2, (255, 255, 255), font=font, spacing=13, align="center")
@@ -66,9 +60,9 @@ def draw_pickrate(agent_stats: dict):
 def draw_overview(overview_stats: dict):
     ovbg = Image.open(os.path.join(ASSETS_PATH, "overviewbg.png"))
     drawpr = ImageDraw.Draw(ovbg)
-    text1 = f"Avg. Frag\n{overview_stats['Frag']}\n\nTime Played\n{overview_stats['Hours']} hours"
-    text2 = f"ACS\n{overview_stats['ACS']}\n\nK/D\n{overview_stats['KD']}"
-    text3 = f"HS%\n{overview_stats['HS%']}%\n\nK/R\n{overview_stats['KR']}"
+    text1 = f"Avg. Frag\n{overview_stats['Frag']:.2F}\n\nAbilities/Round\n{overview_stats['Ability']:.2F}"
+    text2 = f"ACS\n{int(overview_stats['ACS'])}\n\nK/D\n{overview_stats['KD']:.2F}"
+    text3 = f"HS%\n{int(overview_stats['HS%'])}%\n\nK/R\n{overview_stats['KR']:.2F}"
 
     drawpr.multiline_text((280, 24), text1, (255, 255, 255), font=font, spacing=13, align="center")
     drawpr.multiline_text((591, 24), text2, (255, 255, 255), font=font, spacing=13, align="center")
@@ -96,8 +90,7 @@ def draw_graph(rank_stats: list):
     positions = (0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 23, 24)
     labels = (
         "Un", "I1", "I2", "I3", "B1", "B2", "B3", "S1", "S2", "S3", "G1", "G2", "G3", "P1", "P2", "P3", "D1", "D2",
-        "D3",
-        "Im", "Rad")
+        "D3", "Im", "Rad")
     plt.xticks(list(range(len(rank_tiers))), dates)
     plt.yticks(positions, labels)
     plt.grid()
@@ -117,14 +110,14 @@ def draw_graph(rank_stats: list):
     rank_tiers.set_capstyle("round")
     ax.add_collection(rank_tiers)
     ax.margins(x=0, y=0.05)
-    plt.savefig("cache.png")
+    plt.savefig(CACHE_PATH)
 
 
 def draw_locmap(locations, teams, gamemap):
     mapbg = mapIcons[gamemap]
     drawmap = ImageDraw.Draw(mapbg)
     mix = zip(locations, teams)
-    team_dict = {"red": (255, 0, 0), "green": (0, 255, 0)}
+    team_dict = {"red": (255, 0, 0), "blue": (0, 0, 255)}
 
     for x, team in mix:
         drawmap.text(x, "x", team_dict[team.lower()], font=font, spacing=13, align="center", anchor="mm")
